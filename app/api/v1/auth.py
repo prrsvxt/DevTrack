@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.schemas.user import UserCreate, UserRead, UserLogin, TokenRead
-from app.services.dependencies import get_user_service
+from app.models.user import User
+from app.services.dependencies import get_user_service, get_current_user
 from app.services.user_service import UserService
 from app.core.security import create_access_token
 
@@ -24,4 +25,7 @@ async def login_user(user_data: UserLogin, user_service: UserService = Depends(g
     
     access_token = create_access_token(subject=str(user.id))
     return TokenRead(access_token=access_token)
-    
+
+@router.get('/me', response_model=UserRead)
+async def get_me(current_user: User = Depends(get_current_user)) -> UserRead:
+    return current_user
