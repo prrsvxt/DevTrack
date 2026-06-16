@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories.task_repository import TaskRepository
-from app.schemas.task import TaskCreate, TaskRead
+from app.schemas.task import TaskCreate, TaskRead, TaskUpdate
 from app.models.user import User
 from app.models.task import Task
 
@@ -45,3 +45,18 @@ class TaskService:
             return None
         else:
             raise PermissionError('User is not permitted to delete this task.')
+    
+    async def update_task(self, current_user: User, task_id: int , task_updates: TaskUpdate):
+
+        task = await self.task_repository.get_by_id(task_id)
+
+        if task is None:
+            raise ValueError('Task doesn\'t exist!')
+
+        if current_user.id == task.owner_id:
+            updated_task = await self.task_repository.update(task, task_updates)
+            await self.session.commit()
+            await self.session.refresh(updated_task)
+            return updated_task
+        else:
+            raise PermissionError('User is not permitted to update this task.')

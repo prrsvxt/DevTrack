@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
 
 from app.models.task import Task
+from app.schemas.task import TaskUpdate
 
 
 class TaskRepository():
@@ -27,3 +28,11 @@ class TaskRepository():
     async def delete(self, task_id: int):
         task_for_delete = await self.get_by_id(task_id)
         await self.session.delete(task_for_delete)
+
+    async def update(self, task: Task, task_data: TaskUpdate) -> Task:
+        updates = task_data.model_dump(exclude_unset=True)
+
+        for field_name, value in updates.items():
+            setattr(task, field_name, value)
+        
+        return task
