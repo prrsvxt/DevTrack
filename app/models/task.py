@@ -1,8 +1,15 @@
-from sqlalchemy import String, Text, DateTime, ForeignKey
+import enum
+from sqlalchemy import String, Text, DateTime, ForeignKey, Enum
 from datetime import datetime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+
+
+class TaskStatus(enum.Enum):
+    NEW = 'new'
+    IN_PROGRESS = 'in_progress'
+    DONE = 'done'
 
 
 class Task(Base):
@@ -14,3 +21,4 @@ class Task(Base):
     deadline: Mapped[datetime | None] = mapped_column(DateTime(), nullable=True)
     owner_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='cascade'), nullable=False, index=True)
     owner: Mapped['User'] = relationship(back_populates='tasks')
+    status: Mapped[TaskStatus] = mapped_column(Enum(TaskStatus), default=TaskStatus.NEW, nullable=False)

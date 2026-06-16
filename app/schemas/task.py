@@ -1,6 +1,8 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
 
+from app.models.task import TaskStatus
+
 
 class TaskCreate(BaseModel):
     title: str = Field(min_length=3, max_length=50)
@@ -13,8 +15,10 @@ class TaskRead(BaseModel):
     description: str | None
     deadline: datetime | None
     owner_id: int
+    status: TaskStatus
 
 class TaskUpdate(BaseModel):
     title: str | None
     description: str | None = None
     deadline: datetime | None = None
+    status: TaskStatus | None = None
