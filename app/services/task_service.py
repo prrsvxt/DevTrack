@@ -29,8 +29,8 @@ class TaskService:
         else:
             raise PermissionError('User is not permited to get this task.')
     
-    async def list_tasks(self, current_user: User):
-        tasks = await self.task_repository.list_by_owner_id(current_user.id)
+    async def list_tasks(self, current_user: User, status=None):
+        tasks = await self.task_repository.list_by_owner_id(current_user.id, status)
         return tasks
     
     async def delete_task(self, task_id: int, current_user: User):

@@ -20,8 +20,12 @@ class TaskRepository():
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
     
-    async def list_by_owner_id(self, owner_id: int):
+    async def list_by_owner_id(self, owner_id: int, status=None):
         stmt = select(Task).where(Task.owner_id == owner_id)
+
+        if status:
+            stmt = stmt.where(Task.status == status)
+
         result = await self.session.execute(stmt)
         return result.scalars().all()
     

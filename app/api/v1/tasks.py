@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, status
 
 from app.schemas.task import TaskCreate, TaskRead, TaskUpdate
 from app.models.user import User
+from app.models.task import TaskStatus
 from app.services.task_service import TaskService
 from app.services.dependencies import get_task_service, get_current_user
 
@@ -13,9 +14,9 @@ async def create_task(task_data: TaskCreate, task_service: TaskService = Depends
     task = await task_service.create_task(task_data, current_user)
     return task
 
-@router.get('')
-async def get_tasks(task_service: TaskService = Depends(get_task_service), current_user: User = Depends(get_current_user)):
-    tasks = await task_service.list_tasks(current_user=current_user)
+@router.get('', response_model=list[TaskRead])
+async def get_tasks(status: TaskStatus | None = None, task_service: TaskService = Depends(get_task_service), current_user: User = Depends(get_current_user)):
+    tasks = await task_service.list_tasks(current_user=current_user, status=status)
     return tasks
 
 @router.get('/{task_id}', response_model=TaskRead)
