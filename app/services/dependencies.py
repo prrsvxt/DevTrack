@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
+from redis.asyncio import Redis
 from fastapi.security import HTTPAuthorizationCredentials
 
 from app.services.user_service import UserService
@@ -32,6 +33,9 @@ async def get_current_user(session: AsyncSession = Depends(get_session), credent
     
     return user
 
-async def get_task_service(session: AsyncSession = Depends(get_session)) -> TaskService:
-    task_service = TaskService(session=session)
+async def get_redis(request: Request) -> Redis:
+    return request.app.state.redis
+
+async def get_task_service(session: AsyncSession = Depends(get_session), redis_client: Redis = Depends(get_redis)) -> TaskService:
+    task_service = TaskService(session=session, redis_client=redis_client)
     return task_service

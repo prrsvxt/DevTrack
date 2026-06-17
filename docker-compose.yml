@@ -10,6 +10,18 @@ services:
       - "5433:5432"
     volumes:
       - devtrack_postgres_data:/var/lib/postgresql/data
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    restart: always
+    ports: 
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    environment:
+      - REDIS_PASSWORD=my_pass
+    command: redis-server --requirepass my_pass
 
 volumes:
   devtrack_postgres_data:
+  redis_data:

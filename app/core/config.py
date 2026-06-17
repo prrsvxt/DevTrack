@@ -11,6 +11,11 @@ class Settings(BaseSettings):
     jwt_algorithm: str = Field(default='HS256', alias='JWT_ALGORITHM')
     access_token_expire_minutes: int = Field(default=30, alias='ACCESS_TOKEN_EXPIRE_MINUTES')
 
+    redis_host: str
+    redis_port: int
+    redis_password: str
+    redis_db: int
+
     model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8', extra='ignore')
 
 
