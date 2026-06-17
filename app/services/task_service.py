@@ -1,4 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import date
 
 from app.repositories.task_repository import TaskRepository
 from app.schemas.task import TaskCreate, TaskRead, TaskUpdate
@@ -29,13 +30,13 @@ class TaskService:
         else:
             raise PermissionError('User is not permited to get this task.')
     
-    async def list_tasks(self, current_user: User, status=None, limit: int = 10, offset: int = 0):
+    async def list_tasks(self, current_user: User, status=None, deadline: date | None = None, limit: int = 10, offset: int = 0):
 
         limit = min(limit, 100)
         if offset < 0 or limit < 0 :
             raise ValueError('Offset value or limit value is not correct!')
 
-        tasks = await self.task_repository.list_by_owner_id(current_user.id, status, limit, offset)
+        tasks = await self.task_repository.list_by_owner_id(current_user.id, status, deadline, limit, offset)
         return tasks
     
     async def delete_task(self, task_id: int, current_user: User):

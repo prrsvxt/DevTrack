@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, status
+from datetime import date
 
 from app.schemas.task import TaskCreate, TaskRead, TaskUpdate
 from app.models.user import User
@@ -15,9 +16,9 @@ async def create_task(task_data: TaskCreate, task_service: TaskService = Depends
     return task
 
 @router.get('', response_model=list[TaskRead])
-async def get_tasks(task_status: TaskStatus | None = None, task_service: TaskService = Depends(get_task_service), current_user: User = Depends(get_current_user), limit: int = 10, offset: int = 0):
+async def get_tasks(task_status: TaskStatus | None = None, task_service: TaskService = Depends(get_task_service), current_user: User = Depends(get_current_user), deadline: date | None = None, limit: int = 10, offset: int = 0):
     try:
-        tasks = await task_service.list_tasks(current_user=current_user, status=task_status, limit=limit, offset=offset)
+        tasks = await task_service.list_tasks(current_user=current_user, status=task_status, deadline=deadline, limit=limit, offset=offset)
     except ValueError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Bad pagination params.')
     return tasks

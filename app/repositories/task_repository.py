@@ -1,6 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime
+from datetime import date
 
 from app.models.task import Task
 from app.schemas.task import TaskUpdate
@@ -10,7 +10,7 @@ class TaskRepository():
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def create(self, title: str, description: str, deadline: datetime, owner_id: int):
+    async def create(self, title: str, description: str, deadline: date, owner_id: int):
         task = Task(title=title, description=description, deadline=deadline, owner_id=owner_id)
         self.session.add(task)
         return task
@@ -20,11 +20,14 @@ class TaskRepository():
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
     
-    async def list_by_owner_id(self, owner_id: int, status=None, limit: int = 10, offset: int = 0):
+    async def list_by_owner_id(self, owner_id: int, status=None, deadline: date | None = None, limit: int = 10, offset: int = 0):
         stmt = select(Task).where(Task.owner_id == owner_id)
 
         if status is not None:
-                stmt = stmt.where(Task.status == status)
+            stmt = stmt.where(Task.status == status)
+        
+        if deadline is not None:
+            stmt = stmt.where(Task.deadline == deadline)
 
         stmt = stmt.offset(offset).limit(limit)
         result = await self.session.execute(stmt)
