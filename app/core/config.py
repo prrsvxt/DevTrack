@@ -1,8 +1,11 @@
+"""Типизированные настройки, загружаемые из окружения и .env."""
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 
 
 class Settings(BaseSettings):
+    # Значения по умолчанию близки к имени приложения и локальной разработке.
     app_name: str = Field(default='DevTrack API', alias='APP_NAME')
     debug: bool = Field(default=True, alias='DEBUG')
     database_url: str = Field(alias='DATABASE_URL') 
@@ -10,6 +13,7 @@ class Settings(BaseSettings):
     jwt_secret_key: str = Field(alias='JWT_SECRET_KEY')
     jwt_algorithm: str = Field(default='HS256', alias='JWT_ALGORITHM')
     access_token_expire_minutes: int = Field(default=30, alias='ACCESS_TOKEN_EXPIRE_MINUTES')
+    refresh_token_expire_days: int = 7
 
     redis_host: str
     redis_port: int

@@ -1,3 +1,5 @@
+"""Доменные исключения, которые использует task service и обработчики API."""
+
 class TaskError(Exception):
     ...
 

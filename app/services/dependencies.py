@@ -1,3 +1,5 @@
+"""Фабрики зависимостей FastAPI для сервисов, сессий и текущего пользователя."""
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends, HTTPException, status, Request
 from redis.asyncio import Redis
@@ -10,12 +12,17 @@ from app.core.security import bearer_scheme, decode_access_token
 from app.repositories.user_repository import UserRepository
 from app.models.user import User
 
-async def get_user_service(session: AsyncSession = Depends(get_session)) -> UserService:
-    
-    user_service = UserService(session=session)
+async def get_redis(request: Request) -> Redis:
+    # Redis добавляется в app.state во время старта в main.py.
+    return request.app.state.redis
+
+async def get_user_service(session: AsyncSession = Depends(get_session), redis_client: Redis = Depends(get_redis)) -> UserService:
+    # Сервис создаётся на каждый запрос, чтобы сессия оставалась request-scoped.
+    user_service = UserService(session=session, redis_client=redis_client)
     return user_service
 
 async def get_current_user(session: AsyncSession = Depends(get_session), credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)) -> User:
+    # Сначала декодируем bearer-токен, затем проверяем, что пользователь существует.
     token = credentials.credentials
     try:
         decoded_token = decode_access_token(token)
@@ -33,9 +40,7 @@ async def get_current_user(session: AsyncSession = Depends(get_session), credent
     
     return user
 
-async def get_redis(request: Request) -> Redis:
-    return request.app.state.redis
-
 async def get_task_service(session: AsyncSession = Depends(get_session), redis_client: Redis = Depends(get_redis)) -> TaskService:
+    # TaskService нужны и БД, и кэш для чтения и записи.
     task_service = TaskService(session=session, redis_client=redis_client)
     return task_service

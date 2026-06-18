@@ -1,3 +1,5 @@
+"""Настройка окружения Alembic для online и offline миграций."""
+
 from logging.config import fileConfig
 
 from sqlalchemy import pool
@@ -8,6 +10,7 @@ from alembic import context
 
 from app.core.config import settings
 from app.db.base import Base
+# Импорт моделей нужен, чтобы Alembic видел metadata всех таблиц.
 from app.models.user import User  # noqa: F401
 from app.models.task import Task
 
@@ -26,6 +29,7 @@ target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:
+    # Offline-режим строит SQL без подключения к базе.
     url = config.get_main_option("sqlalchemy.url")
 
     context.configure(
@@ -40,6 +44,7 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: Connection) -> None:
+    # Online-режим использует живое подключение к БД.
     context.configure(
         connection=connection,
         target_metadata=target_metadata,
@@ -50,6 +55,7 @@ def do_run_migrations(connection: Connection) -> None:
 
 
 async def run_migrations_online() -> None:
+    # Поднимаем async engine и выполняем миграции через него.
     connectable = async_engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",

@@ -1,3 +1,5 @@
+"""Точка входа приложения и общее подключение FastAPI."""
+
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 import redis.asyncio as redis
@@ -22,6 +24,7 @@ from app.exceptions.task import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """Открывает Redis при старте и закрывает его при завершении."""
     redis_client_ = await redis_client.get_connection()
     app.state.redis = redis_client_
     print('redis connected')
@@ -29,6 +32,7 @@ async def lifespan(app: FastAPI):
     await app.state.redis.aclose()
     print('redis disconnected')
 
+# Регистрируем обработчики доменных исключений один раз при запуске приложения.
 app = FastAPI(title='DevTrack API', version='0.1.0', lifespan=lifespan)
 app.add_exception_handler(TaskNotFoundError, task_not_found_handler)
 app.add_exception_handler(TaskPermissionError, task_permission_handler)

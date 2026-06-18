@@ -1,3 +1,5 @@
+"""SQLAlchemy-модель, описывающая пользователей приложения."""
+
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -5,6 +7,7 @@ from app.db.base import Base
 
 
 class User(Base):
+    # Явно задаём имя таблицы, чтобы миграции и запросы были предсказуемыми.
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(primary_key=True)

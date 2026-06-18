@@ -1,3 +1,5 @@
+"""SQLAlchemy-модель задач и enum статусов."""
+
 import enum
 from sqlalchemy import String, Text, Date, ForeignKey, Enum
 from datetime import datetime
@@ -7,12 +9,14 @@ from app.db.base import Base
 
 
 class TaskStatus(enum.Enum):
+    # Значения статусов держим короткими для API и хранения в БД.
     NEW = 'new'
     IN_PROGRESS = 'in_progress'
     DONE = 'done'
 
 
 class Task(Base):
+    # Задачи принадлежат пользователям и удаляются каскадно вместе с ними.
     __tablename__ = 'tasks'
 
     id: Mapped[int] = mapped_column(primary_key=True)

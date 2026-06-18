@@ -1,3 +1,5 @@
+"""CRUD-эндпоинты задач, работающие через слой сервиса."""
+
 from fastapi import APIRouter, HTTPException, Depends, status
 from datetime import date
 
@@ -12,26 +14,31 @@ router = APIRouter(prefix='/tasks', tags=['Tasks'])
 
 @router.post('', response_model=TaskRead, status_code=status.HTTP_201_CREATED)
 async def create_task(task_data: TaskCreate, task_service: TaskService = Depends(get_task_service), current_user: User = Depends(get_current_user)):
+    # Создание отдаём сервису, чтобы инвалидация кэша выполнялась один раз.
     task = await task_service.create_task(task_data, current_user)
     return task
 
 @router.get('', response_model=list[TaskRead])
 async def get_tasks(task_status: TaskStatus | None = None, task_service: TaskService = Depends(get_task_service), current_user: User = Depends(get_current_user), deadline: date | None = None, limit: int = 10, offset: int = 0):
+    # Проверка пагинации и Redis-кэш живут на стороне сервиса.
     tasks = await task_service.list_tasks(current_user=current_user, status=task_status, deadline=deadline, limit=limit, offset=offset)
     return tasks
 
 @router.get('/{task_id}', response_model=TaskRead)
 async def get_task_by_id(task_id: int, task_service: TaskService = Depends(get_task_service), current_user: User = Depends(get_current_user)):
+    # Проверку существования и прав доступа делает сервис.
     task = await task_service.get_task(current_user, task_id)
     return task
 
 @router.delete('/{task_id}')
 async def delete_task_by_id(task_id: int, task_service: TaskService = Depends(get_task_service), current_user: User = Depends(get_current_user)):
+    # Удаление ничего не возвращает, а сервис сам поднимает нужные ошибки.
     await task_service.delete_task(task_id, current_user)
 
 
 @router.patch('/{task_id}', response_model=TaskRead)
 async def update_task(task_id: int, task_data: TaskUpdate, task_service: TaskService = Depends(get_task_service), current_user: User = Depends(get_current_user)):
+    # Обновление тоже идёт через сервис, чтобы БД и кэш не расходились.
     updated_task = await task_service.update_task(current_user, task_id, task_data)
     
     return updated_task
