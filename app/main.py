@@ -5,6 +5,19 @@ import redis.asyncio as redis
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core import redis_client
+from app.exceptions.handlers import (
+    task_not_found_handler,
+    task_permission_handler,
+    invalid_pagination_handler,
+)
+
+from app.exceptions.task import (
+    TaskNotFoundError,
+    TaskPermissionError,
+    InvalidPaginationError,
+)
+
+
 
 
 @asynccontextmanager
@@ -17,4 +30,7 @@ async def lifespan(app: FastAPI):
     print('redis disconnected')
 
 app = FastAPI(title='DevTrack API', version='0.1.0', lifespan=lifespan)
+app.add_exception_handler(TaskNotFoundError, task_not_found_handler)
+app.add_exception_handler(TaskPermissionError, task_permission_handler)
+app.add_exception_handler(InvalidPaginationError, invalid_pagination_handler)
 app.include_router(api_router)

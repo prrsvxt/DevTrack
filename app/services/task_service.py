@@ -7,6 +7,7 @@ from app.repositories.task_repository import TaskRepository
 from app.schemas.task import TaskCreate, TaskRead, TaskUpdate
 from app.models.user import User
 from app.models.task import Task
+from app.exceptions.task import *
 
 
 class TaskService:
@@ -33,18 +34,18 @@ class TaskService:
         task = await self.task_repository.get_by_id(task_id)
 
         if task is None:
-            raise ValueError('Task doesn\'t exist!')
+            raise TaskNotFoundError('Task doesn\'t exist!')
 
         if task.owner_id == current_user.id:
             return task
         else:
-            raise PermissionError('User is not permited to get this task.')
+            raise TaskPermissionError('User is not permited to get this task.')
     
     async def list_tasks(self, current_user: User, status=None, deadline: date | None = None, limit: int = 10, offset: int = 0):
 
         limit = min(limit, 100)
         if offset < 0 or limit < 0 :
-            raise ValueError('Offset value or limit value is not correct!')
+            raise InvalidPaginationError('Offset value or limit value is not correct!')
         
         cache_key = (
             f"tasks:user:{current_user.id}:"
@@ -71,7 +72,7 @@ class TaskService:
         task = await self.task_repository.get_by_id(task_id)
         
         if task is None:
-            raise ValueError('Task doesn\'t exist!')
+            raise TaskNotFoundError('Task doesn\'t exist!')
 
         if task.owner_id == current_user.id:
             await self.task_repository.delete(task_id)
@@ -80,14 +81,14 @@ class TaskService:
             await self._invalidate_user_tasks_cache(current_user.id)
             return None
         else:
-            raise PermissionError('User is not permitted to delete this task.')
+            raise TaskPermissionError('User is not permitted to delete this task.')
     
     async def update_task(self, current_user: User, task_id: int , task_updates: TaskUpdate):
 
         task = await self.task_repository.get_by_id(task_id)
 
         if task is None:
-            raise ValueError('Task doesn\'t exist!')
+            raise TaskNotFoundError('Task doesn\'t exist!')
 
         if current_user.id == task.owner_id:
             updated_task = await self.task_repository.update(task, task_updates)
@@ -97,4 +98,4 @@ class TaskService:
             await self._invalidate_user_tasks_cache(current_user.id)
             return updated_task
         else:
-            raise PermissionError('User is not permitted to update this task.')
+            raise TaskPermissionError('User is not permitted to update this task.')
