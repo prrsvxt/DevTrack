@@ -21,6 +21,11 @@ services:
     environment:
       - REDIS_PASSWORD=my_pass
     command: redis-server --requirepass my_pass
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"
 
 volumes:
   devtrack_postgres_data:

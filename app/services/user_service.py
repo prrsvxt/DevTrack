@@ -10,6 +10,7 @@ from app.models.user import User
 from app.core.security import hash_password, verify_password, create_access_token, decode_access_token, create_refresh_token
 from app.core.config import settings
 from app.exceptions.token import TokenBlacklistedError
+from app.tasks.email import task_welcome_email
 
 
 class UserService:
@@ -36,6 +37,7 @@ class UserService:
         await self.session.commit()
         await self.session.refresh(user)
 
+        task_welcome_email.delay(user.email)
         return user
     
     async def authenticate_user(self, user_data: UserLogin) -> User:
