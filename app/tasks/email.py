@@ -25,5 +25,5 @@ def task_welcome_email(self, email: str) -> None:
         ConnectionError,
         OSError,
     ) as exc:
-        raise self.retry(exc=exc, retry=3)
+        raise self.retry(exc=exc, countdown=3)
 
