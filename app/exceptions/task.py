@@ -1,13 +1,13 @@
-"""Доменные исключения, которые использует task service и обработчики API."""
+from app.exceptions.base import BadRequestError, NotFoundError, PermissionDeniedError
 
-class TaskError(Exception):
-    ...
 
-class TaskNotFoundError(TaskError):
-    ...
+class TaskNotFoundError(NotFoundError):
+    pass
 
-class TaskPermissionError(TaskError):
-    ...
 
-class InvalidPaginationError(TaskError):
-    ...
+class TaskPermissionError(PermissionDeniedError):
+    pass
+
+
+class InvalidPaginationError(BadRequestError):
+    pass

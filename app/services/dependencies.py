@@ -7,6 +7,7 @@ from fastapi.security import HTTPAuthorizationCredentials
 
 from app.services.user_service import UserService
 from app.services.task_service import TaskService
+from app.services.team_service import TeamService
 from app.db.dependencies import get_session
 from app.core.security import bearer_scheme, decode_access_token
 from app.repositories.user_repository import UserRepository
@@ -44,3 +45,7 @@ async def get_task_service(session: AsyncSession = Depends(get_session), redis_c
     # TaskService нужны и БД, и кэш для чтения и записи.
     task_service = TaskService(session=session, redis_client=redis_client)
     return task_service
+
+async def get_team_service(session: AsyncSession = Depends(get_session)) -> TeamService:
+    team_service = TeamService(session)
+    return team_service

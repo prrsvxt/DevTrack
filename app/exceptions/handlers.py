@@ -3,18 +3,37 @@
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
 
-from app.exceptions.task import TaskNotFoundError, TaskPermissionError, InvalidPaginationError
+from app.exceptions.base import (
+    BadRequestError,
+    ConflictError,
+    NotFoundError,
+    PermissionDeniedError,
+)
 
 
-async def task_not_found_handler(request: Request, exc:TaskNotFoundError) -> JSONResponse:
-    # Все ошибки отсутствия задачи приводим к одному JSON-ответу.
-    return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"detail": "not found"})
+async def not_found_handler(request: Request, exc: NotFoundError) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_404_NOT_FOUND,
+        content={"detail": str(exc) or "Resource not found"},
+    )
 
-async def task_permission_handler(request: Request, exc: TaskPermissionError) -> JSONResponse:
-    # Ошибку прав доступа отделяем от ошибки отсутствия ресурса.
-    return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": "You do not have permission to access this task"})
 
-async def invalid_pagination_handler(request: Request, exc: InvalidPaginationError) -> JSONResponse:
-    # Неверная пагинация - это ошибка клиента, поэтому отдаём HTTP 400.
-    return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"detail": "Bad pagination params"})
+async def permission_denied_handler(request: Request, exc: PermissionDeniedError) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_403_FORBIDDEN,
+        content={"detail": str(exc) or "Permission denied"},
+    )
 
+
+async def bad_request_handler(request: Request, exc: BadRequestError) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={"detail": str(exc) or "Bad request"},
+    )
+
+
+async def conflict_handler(request: Request, exc: ConflictError) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_409_CONFLICT,
+        content={"detail": str(exc) or "Conflict"},
+    )
