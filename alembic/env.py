@@ -14,6 +14,7 @@ from app.db.base import Base
 from app.models.user import User  # noqa: F401
 from app.models.task import Task
 from app.models.team import Team
+from app.models.team_member import TeamMember
 
 
 config = context.config

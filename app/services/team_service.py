@@ -1,7 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories.team_repository import TeamRepository
+from app.repositories.team_member_repository import TeamMemberRepository
 from app.schemas.team import UpdateTeam, CreateTeam
+from app.enums.team_role import TeamRole
 from app.exceptions.team import TeamNotFoundError, TeamPermissionError
 from app.models.team import Team
 from app.models.user import User
@@ -11,6 +13,7 @@ class TeamService:
     def __init__(self, session: AsyncSession):
         self.session = session
         self.team_repository = TeamRepository(self.session)
+        self.team_member_repository = TeamMemberRepository(self.session)
     
     async def _get_owned_team(self, team_id: int, current_user: User) -> Team:
         team = await self.team_repository.get_by_id(team_id)
@@ -23,8 +26,13 @@ class TeamService:
     # create_team
     async def create_team(self, current_user: User, team_data: CreateTeam) -> Team:
         owner_id = current_user.id
-
+        
         team = await self.team_repository.create(team_data.name, team_data.description, owner_id)
+
+        await self.session.flush()
+
+        await self.team_member_repository.create(team_id=team.id, user_id=owner_id, role=TeamRole.OWNER)
+
         await self.session.commit()
         await self.session.refresh(team)
 

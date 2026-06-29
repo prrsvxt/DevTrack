@@ -15,3 +15,4 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(50), unique=True, index=True)
     hashed_password: Mapped[str] = mapped_column(String(255))
     tasks: Mapped[list['Task']] = relationship(back_populates='owner')
+    team_members: Mapped[list['TeamMember']] = relationship(back_populates='user')
