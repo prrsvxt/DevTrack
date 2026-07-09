@@ -10,11 +10,10 @@ from alembic import context
 
 from app.core.config import settings
 from app.db.base import Base
-# Импорт моделей нужен, чтобы Alembic видел metadata всех таблиц.
-from app.models.user import User  # noqa: F401
 from app.models.task import Task
 from app.models.team import Team
 from app.models.team_member import TeamMember
+from app.models.user import User  # noqa: F401
 
 
 config = context.config
