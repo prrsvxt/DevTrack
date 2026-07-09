@@ -7,9 +7,11 @@ class CreateTeam(BaseModel):
     name: str
     description: str | None = None
 
+
 class UpdateTeam(BaseModel):
     name: str | None = None
     description: str | None = None
+
 
 class TeamResponse(BaseModel):
     id: int

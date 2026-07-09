@@ -16,6 +16,7 @@ class UserRead(BaseModel):
     email: EmailStr
     username: str
 
+
 class UserLogin(BaseModel):
     # Логин использует ту же пару username/password, что и UI.
     username: str = Field(min_length=3, max_length=50)

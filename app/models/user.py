@@ -8,11 +8,11 @@ from app.db.base import Base
 
 class User(Base):
     # Явно задаём имя таблицы, чтобы миграции и запросы были предсказуемыми.
-    __tablename__ = 'users'
+    __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     username: Mapped[str] = mapped_column(String(50), unique=True, index=True)
     hashed_password: Mapped[str] = mapped_column(String(255))
-    tasks: Mapped[list['Task']] = relationship(back_populates='owner')
-    team_members: Mapped[list['TeamMember']] = relationship(back_populates='user')
+    tasks: Mapped[list["Task"]] = relationship(back_populates="owner")
+    team_members: Mapped[list["TeamMember"]] = relationship(back_populates="user")

@@ -20,7 +20,9 @@ async def not_found_handler(request: Request, exc: NotFoundError) -> JSONRespons
     )
 
 
-async def permission_denied_handler(request: Request, exc: PermissionDeniedError) -> JSONResponse:
+async def permission_denied_handler(
+    request: Request, exc: PermissionDeniedError
+) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_403_FORBIDDEN,
         content={"detail": str(exc) or "Permission denied"},
@@ -41,14 +43,18 @@ async def conflict_handler(request: Request, exc: ConflictError) -> JSONResponse
     )
 
 
-async def invalid_credentials_handler(request: Request, exc: InvalidCredentialsError) -> JSONResponse:
+async def invalid_credentials_handler(
+    request: Request, exc: InvalidCredentialsError
+) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_401_UNAUTHORIZED,
         content={"detail": str(exc) or "Invalid credentials"},
     )
 
 
-async def invalid_token_handler(request: Request, exc: InvalidTokenError) -> JSONResponse:
+async def invalid_token_handler(
+    request: Request, exc: InvalidTokenError
+) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_401_UNAUTHORIZED,
         content={"detail": str(exc) or "Invalid token"},

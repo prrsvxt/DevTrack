@@ -8,9 +8,9 @@ class EmailService:
     def send_message(self, to_email: str, subject: str, content: str) -> None:
         message = EmailMessage()
 
-        message['From'] = settings.email_from
-        message['To'] = to_email
-        message['Subject'] = subject
+        message["From"] = settings.email_from
+        message["To"] = to_email
+        message["Subject"] = subject
 
         message.set_content(content)
 

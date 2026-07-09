@@ -14,16 +14,22 @@ class TeamService:
         self.session = session
         self.team_repository = TeamRepository(self.session)
         self.team_member_repository = TeamMemberRepository(self.session)
-        self.team_permission_service = TeamPermissionService(self.session, team_member_repository=self.team_member_repository)
+        self.team_permission_service = TeamPermissionService(
+            self.session, team_member_repository=self.team_member_repository
+        )
 
     async def create_team(self, current_user: User, team_data: CreateTeam) -> Team:
         owner_id = current_user.id
 
-        team = await self.team_repository.create(team_data.name, team_data.description, owner_id)
+        team = await self.team_repository.create(
+            team_data.name, team_data.description, owner_id
+        )
 
         await self.session.flush()
 
-        await self.team_member_repository.create(team_id=team.id, user_id=owner_id, role=TeamRole.OWNER)
+        await self.team_member_repository.create(
+            team_id=team.id, user_id=owner_id, role=TeamRole.OWNER
+        )
 
         await self.session.commit()
         await self.session.refresh(team)
@@ -31,7 +37,9 @@ class TeamService:
         return team
 
     async def get_team(self, current_user: User, team_id: int) -> Team:
-        await self.team_permission_service.ensure_can_view_team(team_id=team_id, current_user=current_user)
+        await self.team_permission_service.ensure_can_view_team(
+            team_id=team_id, current_user=current_user
+        )
 
         team = await self.team_repository.get_by_id(team_id=team_id)
         return team
@@ -40,8 +48,12 @@ class TeamService:
         teams = await self.team_repository.get_by_member_user_id(current_user.id)
         return teams
 
-    async def update_team(self, current_user: User, team_id: int, team_updates: UpdateTeam) -> Team:
-        await self.team_permission_service.ensure_can_update_team(team_id=team_id, current_user=current_user)
+    async def update_team(
+        self, current_user: User, team_id: int, team_updates: UpdateTeam
+    ) -> Team:
+        await self.team_permission_service.ensure_can_update_team(
+            team_id=team_id, current_user=current_user
+        )
 
         team = await self.team_repository.get_by_id(team_id=team_id)
 
@@ -52,7 +64,9 @@ class TeamService:
         return updated_team
 
     async def delete_team(self, current_user: User, team_id: int) -> None:
-        await self.team_permission_service.ensure_can_delete_team(team_id=team_id, current_user=current_user)
+        await self.team_permission_service.ensure_can_delete_team(
+            team_id=team_id, current_user=current_user
+        )
 
         team_to_delete = await self.team_repository.get_by_id(team_id=team_id)
 

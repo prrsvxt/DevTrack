@@ -15,4 +15,4 @@ celery_app = Celery(
 )
 
 
-celery_app.conf.imports = ('app.tasks.email',)
+celery_app.conf.imports = ("app.tasks.email",)

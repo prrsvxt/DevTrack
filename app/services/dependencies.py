@@ -42,13 +42,13 @@ async def get_current_user(session: SessionDep, credentials: CredentialsDep) -> 
     decoded_token = decode_access_token(token)
 
     try:
-        user_id = int(decoded_token['sub'])
-    except (KeyError, TypeError, ValueError):
-        raise InvalidTokenError('Authentication failed')
+        user_id = int(decoded_token["sub"])
+    except KeyError, TypeError, ValueError:
+        raise InvalidTokenError("Authentication failed")
     user_repo = UserRepository(session)
     user = await user_repo.get_by_id(user_id)
     if not user:
-        raise InvalidTokenError('Authentication failed')
+        raise InvalidTokenError("Authentication failed")
 
     return user
 

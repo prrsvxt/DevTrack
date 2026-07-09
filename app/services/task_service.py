@@ -21,7 +21,9 @@ class TaskService:
         self.session = session
         self.task_repository = TaskRepository(self.session)
         self.team_member_repository = TeamMemberRepository(self.session)
-        self.team_permission_service = TeamPermissionService(self.session, team_member_repository=self.team_member_repository)
+        self.team_permission_service = TeamPermissionService(
+            self.session, team_member_repository=self.team_member_repository
+        )
         self.task_permission_service = TaskPermissionService(
             self.session,
             task_repository=self.task_repository,
@@ -31,7 +33,7 @@ class TaskService:
 
     async def _invalidate_user_tasks_cache(self, user_id: int) -> None:
         # Удаляем все закэшированные списки задач пользователя после записи.
-        pattern = f'tasks:user:{user_id}:*'
+        pattern = f"tasks:user:{user_id}:*"
 
         async for key in self.redis_client.scan_iter(match=pattern):
             await self.redis_client.delete(key)
@@ -43,7 +45,9 @@ class TaskService:
         for member in team_members:
             await self._invalidate_user_tasks_cache(member.user_id)
 
-    async def _invalidate_accessible_tasks_cache(self, user_id: int, team_id: int | None) -> None:
+    async def _invalidate_accessible_tasks_cache(
+        self, user_id: int, team_id: int | None
+    ) -> None:
         await self._invalidate_user_tasks_cache(user_id)
 
         if team_id is not None:
@@ -51,7 +55,9 @@ class TaskService:
 
     async def create_task(self, task_data: TaskCreate, current_user: User) -> Task:
         # Если задача создаётся в команде, проверяем, что пользователь в неё входит.
-        await self.task_permission_service.ensure_can_create_task(team_id=task_data.team_id, current_user=current_user)
+        await self.task_permission_service.ensure_can_create_task(
+            team_id=task_data.team_id, current_user=current_user
+        )
 
         task = await self.task_repository.create(
             title=task_data.title,
@@ -68,7 +74,9 @@ class TaskService:
 
     async def get_task(self, current_user: User, task_id: int) -> Task:
         # Права доступа и существование задачи проверяются в отдельном сервисе.
-        task = await self.task_permission_service.ensure_can_view_task(task_id=task_id, current_user=current_user)
+        task = await self.task_permission_service.ensure_can_view_task(
+            task_id=task_id, current_user=current_user
+        )
         return task
 
     async def list_tasks(
@@ -82,14 +90,14 @@ class TaskService:
         # Ограничиваем размер выдачи, чтобы клиент не запросил слишком много строк за раз.
         limit = min(limit, 100)
         if offset < 0 or limit < 0:
-            raise InvalidPaginationError('Offset value or limit value is not correct!')
+            raise InvalidPaginationError("Offset value or limit value is not correct!")
 
         cache_key = (
-            f'tasks:user:{current_user.id}:'
-            f'status:{status}:'
-            f'deadline:{deadline}:'
-            f'limit:{limit}:'
-            f'offset:{offset}'
+            f"tasks:user:{current_user.id}:"
+            f"status:{status}:"
+            f"deadline:{deadline}:"
+            f"limit:{limit}:"
+            f"offset:{offset}"
         )
         cached_tasks = await self.redis_client.get(cache_key)
 
@@ -106,7 +114,7 @@ class TaskService:
 
         # Преобразуем ORM-объекты в формат ответа перед записью в кэш.
         tasks = [TaskRead.model_validate(task) for task in tasks]
-        tasks_to_dump = [task.model_dump(mode='json') for task in tasks]
+        tasks_to_dump = [task.model_dump(mode="json") for task in tasks]
         tasks_json = json.dumps(tasks_to_dump)
 
         await self.redis_client.set(cache_key, tasks_json, ex=60)
@@ -114,16 +122,22 @@ class TaskService:
 
     async def delete_task(self, task_id: int, current_user: User) -> None:
         # Удаление остаётся доступно только владельцу задачи.
-        task = await self.task_permission_service.ensure_can_delete_task(task_id=task_id, current_user=current_user)
+        task = await self.task_permission_service.ensure_can_delete_task(
+            task_id=task_id, current_user=current_user
+        )
 
         await self.task_repository.delete(task_id)
         await self.session.commit()
 
         await self._invalidate_accessible_tasks_cache(current_user.id, task.team_id)
 
-    async def update_task(self, current_user: User, task_id: int, task_updates: TaskUpdate) -> Task:
+    async def update_task(
+        self, current_user: User, task_id: int, task_updates: TaskUpdate
+    ) -> Task:
         # Частичное обновление остаётся доступно только владельцу задачи.
-        task = await self.task_permission_service.ensure_can_update_task(task_id=task_id, current_user=current_user)
+        task = await self.task_permission_service.ensure_can_update_task(
+            task_id=task_id, current_user=current_user
+        )
 
         updated_task = await self.task_repository.update(task, task_updates)
         await self.session.commit()

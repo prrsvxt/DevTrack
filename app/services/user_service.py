@@ -5,9 +5,19 @@ from datetime import datetime, timezone
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.security import create_access_token, create_refresh_token, decode_access_token, hash_password, verify_password
+from app.core.security import (
+    create_access_token,
+    create_refresh_token,
+    decode_access_token,
+    hash_password,
+    verify_password,
+)
 from app.exceptions.token import InvalidTokenError, TokenBlacklistedError
-from app.exceptions.user import InvalidCredentialsError, UserAlreadyExistsError, UsernameAlreadyTakenError
+from app.exceptions.user import (
+    InvalidCredentialsError,
+    UserAlreadyExistsError,
+    UsernameAlreadyTakenError,
+)
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.schemas.user import UserCreate, UserLogin
@@ -22,13 +32,17 @@ class UserService:
 
     async def register_user(self, user_data: UserCreate) -> User:
         # Проверяем дубликаты до хэширования, чтобы быстрее вернуть конфликт.
-        existing_user_by_email = await self.user_repository.get_by_email(user_data.email)
+        existing_user_by_email = await self.user_repository.get_by_email(
+            user_data.email
+        )
         if existing_user_by_email is not None:
-            raise UserAlreadyExistsError('User with this email already exists')
+            raise UserAlreadyExistsError("User with this email already exists")
 
-        existing_user_by_username = await self.user_repository.get_by_username(user_data.username)
+        existing_user_by_username = await self.user_repository.get_by_username(
+            user_data.username
+        )
         if existing_user_by_username is not None:
-            raise UsernameAlreadyTakenError('This username is already taken')
+            raise UsernameAlreadyTakenError("This username is already taken")
 
         hashed_password = hash_password(user_data.password)
 
@@ -47,10 +61,10 @@ class UserService:
         # Возвращаем одинаковую ошибку для обоих сценариев, чтобы не подсказывать лишнее.
         user = await self.user_repository.get_by_username(user_data.username)
         if user is None:
-            raise InvalidCredentialsError('Invalid username or password')
+            raise InvalidCredentialsError("Invalid username or password")
 
         if not verify_password(user_data.password, user.hashed_password):
-            raise InvalidCredentialsError('Invalid username or password')
+            raise InvalidCredentialsError("Invalid username or password")
 
         return user
 
@@ -58,27 +72,27 @@ class UserService:
         # Refresh-токен сначала декодируется, а потом сверяется с хранилищем.
         decoded_token = decode_access_token(refresh_token)
 
-        user_id = decoded_token.get('sub')
+        user_id = decoded_token.get("sub")
         if user_id is None:
-            raise InvalidTokenError('Invalid token.')
-        if decoded_token.get('type') != 'refresh':
-            raise InvalidTokenError('Invalid token.')
+            raise InvalidTokenError("Invalid token.")
+        if decoded_token.get("type") != "refresh":
+            raise InvalidTokenError("Invalid token.")
 
-        token_jti = decoded_token.get('jti')
-        token_exp = decoded_token.get('exp')
+        token_jti = decoded_token.get("jti")
+        token_exp = decoded_token.get("exp")
 
         if token_jti is None or token_exp is None:
-            raise InvalidTokenError('Invalid token.')
+            raise InvalidTokenError("Invalid token.")
 
-        cache_key = f'refresh:blacklist:{token_jti}'
+        cache_key = f"refresh:blacklist:{token_jti}"
 
         token_blacklisted = await self.redis_client.get(cache_key)
         if token_blacklisted:
-            raise TokenBlacklistedError('Token is blacklisted')
+            raise TokenBlacklistedError("Token is blacklisted")
 
         user = await self.user_repository.get_by_id(int(user_id))
         if user is None:
-            raise InvalidTokenError('Access Denied.')
+            raise InvalidTokenError("Access Denied.")
 
         access_token = create_access_token(user_id)
         refresh_token = create_refresh_token(user_id)
@@ -87,7 +101,7 @@ class UserService:
         ttl = int(token_exp - now)
 
         if ttl <= 0:
-            raise InvalidTokenError('Token expired.')
+            raise InvalidTokenError("Token expired.")
 
-        await self.redis_client.set(cache_key, 'revoked', ex=ttl)
+        await self.redis_client.set(cache_key, "revoked", ex=ttl)
         return access_token, refresh_token

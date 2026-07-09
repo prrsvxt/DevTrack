@@ -4,8 +4,10 @@ from app.exceptions.base import ConflictError, PermissionDeniedError, NotFoundEr
 class TeamMemberAlreadyExistsError(ConflictError):
     pass
 
+
 class TeamMemberPermissionError(PermissionDeniedError):
     pass
+
 
 class TeamMemberNotFoundError(NotFoundError):
     pass

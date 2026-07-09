@@ -14,9 +14,22 @@ class TaskRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def create(self, title: str, description: str | None, deadline: date | None, owner_id: int, team_id: int | None = None) -> Task:
+    async def create(
+        self,
+        title: str,
+        description: str | None,
+        deadline: date | None,
+        owner_id: int,
+        team_id: int | None = None,
+    ) -> Task:
         # ORM-объект собираем здесь, а сервис решает, когда делать commit.
-        task = Task(title=title, description=description, deadline=deadline, owner_id=owner_id, team_id=team_id)
+        task = Task(
+            title=title,
+            description=description,
+            deadline=deadline,
+            owner_id=owner_id,
+            team_id=team_id,
+        )
         self.session.add(task)
         return task
 
@@ -26,7 +39,14 @@ class TaskRepository:
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def list_accessible_by_user(self, user_id: int, status=None, deadline: date | None = None, limit: int = 10, offset: int = 0) -> list[Task]:
+    async def list_accessible_by_user(
+        self,
+        user_id: int,
+        status=None,
+        deadline: date | None = None,
+        limit: int = 10,
+        offset: int = 0,
+    ) -> list[Task]:
         # Пользователь видит свои задачи и задачи команд, в которых он состоит.
         stmt = (
             select(Task)

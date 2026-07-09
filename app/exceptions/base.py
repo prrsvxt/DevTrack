@@ -17,5 +17,6 @@ class ConflictError(AppError):
 class BusinessRuleError(AppError):
     pass
 
+
 class BadRequestError(AppError):
     pass

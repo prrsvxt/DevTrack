@@ -19,24 +19,24 @@ class TeamRepository:
         stmt = select(Team).where(Team.id == team_id)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
-    
+
     async def get_owned_by_user(self, owner_id) -> list[Team]:
         stmt = select(Team).where(Team.owner_id == owner_id)
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
-    
+
     async def get_by_member_user_id(self, user_id: int) -> list[Team]:
         stmt = select(Team).join(Team.team_members).where(TeamMember.user_id == user_id)
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
-    
+
     async def update(self, team: Team, team_data: UpdateTeam) -> Team:
         update_data = team_data.model_dump(exclude_unset=True)
 
         for field_name, value in update_data.items():
             setattr(team, field_name, value)
-        
+
         return team
-    
-    async def delete(self, team: Team) -> None: 
+
+    async def delete(self, team: Team) -> None:
         await self.session.delete(team)

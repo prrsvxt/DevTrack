@@ -10,9 +10,6 @@ from alembic import context
 
 from app.core.config import settings
 from app.db.base import Base
-from app.models.task import Task
-from app.models.team import Team
-from app.models.team_member import TeamMember
 from app.models.user import User  # noqa: F401
 
 

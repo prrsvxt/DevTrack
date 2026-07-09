@@ -9,7 +9,7 @@ from app.api.v1.tasks import router as tasks_router
 from app.api.v1.team import team_router
 from app.api.v1.team_member import team_member_router
 
-api_router = APIRouter(prefix='/api/v1')
+api_router = APIRouter(prefix="/api/v1")
 # Держим регистрацию роутов централизованной, чтобы точка входа была короткой.
 api_router.include_router(health_router)
 api_router.include_router(auth_router)
