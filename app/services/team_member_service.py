@@ -23,13 +23,41 @@ class TeamMemberService:
             raise TeamMemberPermissionError('This user is not permitted to create new members in group.')
         
         return current_member
+    
+
+    async def ensure_member(self, team_id: int, current_user: User) -> TeamMember:
+
+        member = await self.team_member_repository.get_by_team_and_user(team_id=team_id, user_id=current_user.id)
+
+        if member is None:
+            raise TeamMemberNotFoundError('Current user is not a member of this team')
+        
+        return member
+    
+    async def ensure_admin_or_owner(self, team_id: int, current_user: User) -> TeamMember:
+
+        member = await self.ensure_member(team_id=team_id, current_user=current_user)
+
+        if member.role not in (TeamRole.OWNER, TeamRole.ADMIN):
+            raise TeamMemberPermissionError('Only admin or owner can perform this action')
+        
+        return member
+    
+    async def ensure_owner(self, team_id: int, current_user: User) -> TeamMember:
+
+        member = await self.ensure_member(team_id=team_id, current_user=current_user)
+
+        if member.role != TeamRole.OWNER:
+            raise TeamMemberPermissionError('Only owner can perform this action')
+        
+        return member
 
     async def add_member(self, team_id: int, target_user_id: int, role: TeamRole, current_user: User) -> TeamMember:
         
         if role == TeamRole.OWNER:
             raise TeamMemberPermissionError("Owner role cannot be assigned this way.")
 
-        current_member = await self._get_member_with_management_permission(team_id=team_id, current_user=current_user)
+        current_member = await self.ensure_admin_or_owner(team_id=team_id, current_user=current_user)
 
         team_member = await self.team_member_repository.get_by_team_and_user(team_id=team_id, user_id=target_user_id)
 
@@ -45,7 +73,7 @@ class TeamMemberService:
     
     async def remove_member(self, team_id: int, target_user_id: int, current_user: User) -> None:
 
-        current_member = await self._get_member_with_management_permission(team_id=team_id, current_user=current_user)
+        current_member = await self.ensure_admin_or_owner(team_id=team_id, current_user=current_user)
         
         user_to_delete = await self.team_member_repository.get_by_team_and_user(team_id=team_id, user_id=target_user_id)
 
@@ -63,7 +91,7 @@ class TeamMemberService:
         if new_role is TeamRole.OWNER:
             raise TeamMemberPermissionError("Owner role cannot be assigned this way.")  
 
-        current_member = await self._get_member_with_management_permission(team_id=team_id, current_user=current_user)
+        current_member = await self.ensure_admin_or_owner(team_id=team_id, current_user=current_user)
 
         user_to_change_role = await self.team_member_repository.get_by_team_and_user(team_id=team_id, user_id=target_user_id)
 
