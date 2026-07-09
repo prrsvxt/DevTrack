@@ -1,5 +1,8 @@
 class TokenError(Exception):
     ...
 
-class TokenBlacklistedError(TokenError):
+class InvalidTokenError(TokenError):
+    ...
+
+class TokenBlacklistedError(InvalidTokenError):
     ...

@@ -13,6 +13,7 @@ from app.repositories.task_repository import TaskRepository
 from app.repositories.team_member_repository import TeamMemberRepository
 from app.schemas.task import TaskCreate, TaskRead, TaskUpdate
 from app.services.task_permission_service import TaskPermissionService
+from app.services.team_permission_service import TeamPermissionService
 
 
 class TaskService:
@@ -20,9 +21,12 @@ class TaskService:
         self.session = session
         self.task_repository = TaskRepository(self.session)
         self.team_member_repository = TeamMemberRepository(self.session)
-        self.task_permission_service = TaskPermissionService(self.session)
-        # Используем один репозиторий в обоих сервисах, чтобы SQL-логика не дублировалась.
-        self.task_permission_service.task_repository = self.task_repository
+        self.team_permission_service = TeamPermissionService(self.session, team_member_repository=self.team_member_repository)
+        self.task_permission_service = TaskPermissionService(
+            self.session,
+            task_repository=self.task_repository,
+            team_permission_service=self.team_permission_service,
+        )
         self.redis_client = redis_client
 
     async def _invalidate_user_tasks_cache(self, user_id: int) -> None:
@@ -47,11 +51,7 @@ class TaskService:
 
     async def create_task(self, task_data: TaskCreate, current_user: User) -> Task:
         # Если задача создаётся в команде, проверяем, что пользователь в неё входит.
-        if task_data.team_id is not None:
-            await self.task_permission_service.team_permission_service.ensure_can_view_team(
-                team_id=task_data.team_id,
-                current_user=current_user,
-            )
+        await self.task_permission_service.ensure_can_create_task(team_id=task_data.team_id, current_user=current_user)
 
         task = await self.task_repository.create(
             title=task_data.title,
@@ -114,7 +114,7 @@ class TaskService:
 
     async def delete_task(self, task_id: int, current_user: User) -> None:
         # Удаление остаётся доступно только владельцу задачи.
-        await self.task_permission_service.ensure_can_delete_task(task_id=task_id, current_user=current_user)
+        task = await self.task_permission_service.ensure_can_delete_task(task_id=task_id, current_user=current_user)
 
         await self.task_repository.delete(task_id)
         await self.session.commit()

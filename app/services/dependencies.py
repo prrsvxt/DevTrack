@@ -2,13 +2,14 @@
 
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import Depends, Request
 from fastapi.security import HTTPAuthorizationCredentials
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import bearer_scheme, decode_access_token
 from app.db.dependencies import get_session
+from app.exceptions.token import InvalidTokenError
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.services.task_service import TaskService
@@ -38,19 +39,16 @@ async def get_user_service(session: SessionDep, redis_client: RedisDep) -> UserS
 async def get_current_user(session: SessionDep, credentials: CredentialsDep) -> User:
     # Сначала декодируем bearer-токен, затем проверяем, что пользователь существует.
     token = credentials.credentials
-    try:
-        decoded_token = decode_access_token(token)
-    except ValueError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Authentication failed')
+    decoded_token = decode_access_token(token)
 
     try:
         user_id = int(decoded_token['sub'])
-    except (KeyError, ValueError):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Authentication failed')
+    except (KeyError, TypeError, ValueError):
+        raise InvalidTokenError('Authentication failed')
     user_repo = UserRepository(session)
     user = await user_repo.get_by_id(user_id)
     if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Authentication failed')
+        raise InvalidTokenError('Authentication failed')
 
     return user
 

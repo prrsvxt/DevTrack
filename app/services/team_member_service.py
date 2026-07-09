@@ -14,9 +14,7 @@ class TeamMemberService:
     def __init__(self, session: AsyncSession):
         self.session = session
         self.team_member_repository = TeamMemberRepository(session=session)
-        self.team_permission_service = TeamPermissionService(session)
-        # Используем один и тот же репозиторий в обоих сервисах, чтобы не дублировать SQL-логику.
-        self.team_permission_service.team_member_repository = self.team_member_repository
+        self.team_permission_service = TeamPermissionService(session, team_member_repository=self.team_member_repository)
 
     async def _get_team_member(self, team_id: int, user_id: int) -> TeamMember:
         team_member = await self.team_member_repository.get_by_team_and_user(team_id=team_id, user_id=user_id)

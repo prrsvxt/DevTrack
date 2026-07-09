@@ -9,6 +9,8 @@ from app.exceptions.base import (
     NotFoundError,
     PermissionDeniedError,
 )
+from app.exceptions.token import InvalidTokenError
+from app.exceptions.user import InvalidCredentialsError
 
 
 async def not_found_handler(request: Request, exc: NotFoundError) -> JSONResponse:
@@ -36,4 +38,18 @@ async def conflict_handler(request: Request, exc: ConflictError) -> JSONResponse
     return JSONResponse(
         status_code=status.HTTP_409_CONFLICT,
         content={"detail": str(exc) or "Conflict"},
+    )
+
+
+async def invalid_credentials_handler(request: Request, exc: InvalidCredentialsError) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        content={"detail": str(exc) or "Invalid credentials"},
+    )
+
+
+async def invalid_token_handler(request: Request, exc: InvalidTokenError) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        content={"detail": str(exc) or "Invalid token"},
     )

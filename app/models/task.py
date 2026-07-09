@@ -27,5 +27,5 @@ class Task(Base):
     owner_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='cascade'), nullable=False, index=True)
     team_id: Mapped[int | None] = mapped_column(ForeignKey('teams.id', ondelete='CASCADE'), nullable=True, index=True)
     owner: Mapped['User'] = relationship(back_populates='tasks')
-    team: Mapped['Team'] = relationship(back_populates='tasks')
+    team: Mapped['Team | None'] = relationship(back_populates='tasks')
     status: Mapped[TaskStatus] = mapped_column(Enum(TaskStatus), default=TaskStatus.NEW, nullable=False)

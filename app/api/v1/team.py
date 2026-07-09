@@ -11,7 +11,7 @@ async def create_team(team_data: CreateTeam, current_user: CurrentUser, team_ser
     return team
 
 @team_router.get('/my', response_model=list[TeamResponse])
-async def get_owned_teams(current_user: CurrentUser, team_service: TeamServiceDep):
+async def get_my_teams(current_user: CurrentUser, team_service: TeamServiceDep):
     teams = await team_service.get_my_teams(current_user=current_user)
     return teams
 
