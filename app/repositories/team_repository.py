@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.team import Team
 from app.schemas.team import UpdateTeam
+from app.models.team_member import TeamMember
 
 
 class TeamRepository:
@@ -23,6 +24,11 @@ class TeamRepository:
         stmt = select(Team).where(Team.owner_id == owner_id)
         result = await self.session.execute(stmt)
         return result.scalars().all()
+    
+    async def get_by_member_user_id(self, user_id: int) -> list[Team]:
+        stmt = select(Team).join(Team.team_members).where(TeamMember.user_id == user_id)
+        result = await self.session.execute(stmt)
+        return result.scalars.all()
     
     async def update(self, team: Team, team_data: UpdateTeam) -> Team:
         update_data = team_data.model_dump(exclude_unset=True)
