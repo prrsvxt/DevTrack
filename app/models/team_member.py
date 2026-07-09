@@ -1,9 +1,15 @@
+from typing import TYPE_CHECKING
+
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey, DateTime, func, UniqueConstraint, Enum
 from datetime import datetime
 
 from app.db.base import Base
 from app.enums.team_role import TeamRole
+
+if TYPE_CHECKING:
+    from app.models.team import Team
+    from app.models.user import User
 
 
 class TeamMember(Base):

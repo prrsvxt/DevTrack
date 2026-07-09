@@ -2,8 +2,13 @@
 
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import TYPE_CHECKING
 
 from app.db.base import Base
+
+if TYPE_CHECKING:
+    from app.models.task import Task
+    from app.models.team_member import TeamMember
 
 
 class User(Base):

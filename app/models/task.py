@@ -1,12 +1,17 @@
 """SQLAlchemy-модель задачи и enum статусов."""
 
 import enum
+from typing import TYPE_CHECKING
 from datetime import date
 
 from sqlalchemy import Date, Enum, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+
+if TYPE_CHECKING:
+    from app.models.team import Team
+    from app.models.user import User
 
 
 class TaskStatus(enum.Enum):

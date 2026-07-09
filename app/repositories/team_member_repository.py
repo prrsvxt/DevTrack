@@ -23,7 +23,7 @@ class TeamMemberRepository:
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_by_id(self, member_id: int) -> TeamMember:
+    async def get_by_id(self, member_id: int) -> TeamMember | None:
         stmt = select(TeamMember).where(TeamMember.id == member_id)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()

@@ -43,7 +43,7 @@ async def get_current_user(session: SessionDep, credentials: CredentialsDep) -> 
 
     try:
         user_id = int(decoded_token["sub"])
-    except KeyError, TypeError, ValueError:
+    except (KeyError, TypeError, ValueError):
         raise InvalidTokenError("Authentication failed")
     user_repo = UserRepository(session)
     user = await user_repo.get_by_id(user_id)

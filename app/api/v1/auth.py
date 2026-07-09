@@ -12,8 +12,9 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 @router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
-async def register_user(user_data: UserCreate, user_service: UserServiceDep):
-    return await user_service.register_user(user_data)
+async def register_user(user_data: UserCreate, user_service: UserServiceDep) -> UserRead:
+    user = await user_service.register_user(user_data)
+    return UserRead.model_validate(user)
 
 
 @router.post("/login", response_model=TokenRead)
@@ -28,7 +29,7 @@ async def login_user(user_data: UserLogin, user_service: UserServiceDep):
 @router.get("/me", response_model=UserRead)
 async def get_me(current_user: CurrentUser) -> UserRead:
     # Dependency FastAPI уже возвращает текущего аутентифицированного пользователя.
-    return current_user
+    return UserRead.model_validate(current_user)
 
 
 @router.post("/refresh", response_model=TokenRead)

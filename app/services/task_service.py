@@ -104,7 +104,7 @@ class TaskService:
         if cached_tasks is not None:
             return json.loads(cached_tasks)
 
-        tasks = await self.task_repository.list_accessible_by_user(
+        task_rows = await self.task_repository.list_accessible_by_user(
             user_id=current_user.id,
             status=status,
             deadline=deadline,
@@ -113,8 +113,8 @@ class TaskService:
         )
 
         # Преобразуем ORM-объекты в формат ответа перед записью в кэш.
-        tasks = [TaskRead.model_validate(task) for task in tasks]
-        tasks_to_dump = [task.model_dump(mode="json") for task in tasks]
+        task_reads = [TaskRead.model_validate(task) for task in task_rows]
+        tasks_to_dump = [task.model_dump(mode="json") for task in task_reads]
         tasks_json = json.dumps(tasks_to_dump)
 
         await self.redis_client.set(cache_key, tasks_json, ex=60)

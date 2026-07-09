@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.enums.team_role import TeamRole
+from app.exceptions.team import TeamNotFoundError
 from app.models.team import Team
 from app.models.user import User
 from app.repositories.team_member_repository import TeamMemberRepository
@@ -42,6 +43,8 @@ class TeamService:
         )
 
         team = await self.team_repository.get_by_id(team_id=team_id)
+        if team is None:
+            raise TeamNotFoundError("Team doesn't exist!")
         return team
 
     async def get_my_teams(self, current_user: User) -> list[Team]:
@@ -56,6 +59,8 @@ class TeamService:
         )
 
         team = await self.team_repository.get_by_id(team_id=team_id)
+        if team is None:
+            raise TeamNotFoundError("Team doesn't exist!")
 
         updated_team = await self.team_repository.update(team, team_updates)
         await self.session.commit()
@@ -69,6 +74,8 @@ class TeamService:
         )
 
         team_to_delete = await self.team_repository.get_by_id(team_id=team_id)
+        if team_to_delete is None:
+            raise TeamNotFoundError("Team doesn't exist!")
 
         await self.team_repository.delete(team_to_delete)
         await self.session.commit()

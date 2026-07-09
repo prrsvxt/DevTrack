@@ -13,7 +13,7 @@ from app.exceptions.token import InvalidTokenError
 from app.exceptions.user import InvalidCredentialsError
 
 
-async def not_found_handler(request: Request, exc: NotFoundError) -> JSONResponse:
+async def not_found_handler(request: Request, exc: Exception) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_404_NOT_FOUND,
         content={"detail": str(exc) or "Resource not found"},
@@ -21,7 +21,7 @@ async def not_found_handler(request: Request, exc: NotFoundError) -> JSONRespons
 
 
 async def permission_denied_handler(
-    request: Request, exc: PermissionDeniedError
+    request: Request, exc: Exception
 ) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_403_FORBIDDEN,
@@ -29,14 +29,14 @@ async def permission_denied_handler(
     )
 
 
-async def bad_request_handler(request: Request, exc: BadRequestError) -> JSONResponse:
+async def bad_request_handler(request: Request, exc: Exception) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
         content={"detail": str(exc) or "Bad request"},
     )
 
 
-async def conflict_handler(request: Request, exc: ConflictError) -> JSONResponse:
+async def conflict_handler(request: Request, exc: Exception) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_409_CONFLICT,
         content={"detail": str(exc) or "Conflict"},
@@ -44,7 +44,7 @@ async def conflict_handler(request: Request, exc: ConflictError) -> JSONResponse
 
 
 async def invalid_credentials_handler(
-    request: Request, exc: InvalidCredentialsError
+    request: Request, exc: Exception
 ) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -52,9 +52,7 @@ async def invalid_credentials_handler(
     )
 
 
-async def invalid_token_handler(
-    request: Request, exc: InvalidTokenError
-) -> JSONResponse:
+async def invalid_token_handler(request: Request, exc: Exception) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_401_UNAUTHORIZED,
         content={"detail": str(exc) or "Invalid token"},
